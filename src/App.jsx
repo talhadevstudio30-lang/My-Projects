@@ -27,8 +27,23 @@ function App() {
       : {};
 
     fetch(url, fetchOptions)
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to fetch projects");
+      .then(async (res) => {
+        if (!res.ok) {
+          // try to read JSON body for more details
+          let msg = `Failed to fetch projects (status ${res.status})`;
+          try {
+            const body = await res.json();
+            msg += `: ${JSON.stringify(body)}`;
+          } catch (e) {
+            try {
+              const text = await res.text();
+              msg += `: ${text}`;
+            } catch (_) {
+              // ignore
+            }
+          }
+          throw new Error(msg);
+        }
         return res.json();
       })
       .then(data => {
