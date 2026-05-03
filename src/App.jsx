@@ -13,18 +13,27 @@ function App() {
   const [screenshots, setScreenshots] = useState({});
 
   useEffect(() => {
+    // In dev, if you set VITE_VERCEL_TOKEN locally this will keep working the same way.
+    // In production we proxy the request to our serverless function at /api/projects
     const token = import.meta.env.VITE_VERCEL_TOKEN;
 
-    fetch("https://api.vercel.com/v9/projects?withDeployments=true", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    const isLocalDevWithToken = import.meta.env.DEV && token;
+    const url = isLocalDevWithToken
+      ? "https://api.vercel.com/v9/projects?withDeployments=true"
+      : "/api/projects";
+
+    const fetchOptions = isLocalDevWithToken
+      ? { headers: { Authorization: `Bearer ${token}` } }
+      : {};
+
+    fetch(url, fetchOptions)
       .then(res => {
         if (!res.ok) throw new Error("Failed to fetch projects");
         return res.json();
       })
       .then(data => {
         setProjects(data.projects || []);
-        console.log(data)
+        console.log(data);
         // Fetch screenshots for all projects
         data.projects?.forEach(project => {
           const alias = project.targets?.production?.alias?.[0];
@@ -187,7 +196,7 @@ function App() {
                       />
                     </div>
                   ) : (
-                    <div className="h-40 bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+                    <div className="h-40 bg-linear-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
                       <Favicon project={project} size="large" />
                     </div>
                   )}
