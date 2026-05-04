@@ -28,17 +28,17 @@ function App() {
       const res = await fetch("https://api.vercel.com/v9/projects?withDeployments=true", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       if (!res.ok) {
         if (res.status === 401) {
           throw new Error("Invalid or expired Vercel token");
         }
         throw new Error("Failed to fetch projects");
       }
-      
+
       const data = await res.json();
       setProjects(data.projects || []);
-      
+
       // Fetch screenshots for all projects
       data.projects?.forEach(project => {
         const alias = project.targets?.production?.alias?.[0];
@@ -71,18 +71,18 @@ function App() {
       const response = await fetch(
         `https://api.microlink.io/?url=${encodeURIComponent(fullUrl)}&screenshot=true&meta=false`
       );
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         throw new Error('Response is not JSON');
       }
-      
+
       const data = await response.json();
-      
+
       if (data.status === 'success' && data.data?.screenshot?.url) {
         setScreenshots(prev => ({
           ...prev,
@@ -133,16 +133,16 @@ function App() {
   // Favicon component with fallback
   const Favicon = ({ project, size = 'large' }) => {
     const projectUrl = getProjectUrl(project);
-    
+
     if (!projectUrl || iconErrors[project.id]) {
       return <DefaultIcon project={project} size={size} />;
     }
-    
+
     const faviconUrl = getFaviconUrl(projectUrl);
-    
+
     const sizeClass = size === 'large' ? 'w-16 h-16' : 'w-8 h-8';
     const roundedClass = size === 'large' ? 'rounded-lg shadow-md' : 'rounded';
-    
+
     return (
       <img
         src={faviconUrl}
@@ -152,12 +152,12 @@ function App() {
       />
     );
   };
-  
+
   // Default fallback icon
   const DefaultIcon = ({ project, size }) => {
     const sizeClass = size === 'large' ? 'w-16 h-16' : 'w-8 h-8';
     const textClass = size === 'large' ? 'text-2xl' : 'text-lg';
-    
+
     return (
       <div className={`${sizeClass} bg-indigo-100 rounded-lg flex items-center justify-center`}>
         <span className={`${textClass} font-bold text-indigo-600`}>
@@ -168,11 +168,13 @@ function App() {
   };
 
   const filteredProjects = projects.filter(project => {
+    const search = searchTerm.toLowerCase();
     const name = project.name?.toLowerCase() || '';
     const repo = project.link?.repo?.toLowerCase() || '';
-    const search = searchTerm.toLowerCase();
     return name.includes(search) || repo.includes(search);
   });
+
+  const Demo_Token_Access = import.meta.env.VITE_VERCEL_TOKEN;
 
   // Token Input View
   if (!token) {
@@ -185,34 +187,48 @@ function App() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Vercel Browser</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Project Manager</h1>
             <p className="text-gray-500 mt-2">Enter your Vercel Personal Access Token to continue.</p>
           </div>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            const val = e.target.elements.token.value.trim();
-            if (val) handleSaveToken(val);
-          }}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="token" className="block text-sm font-medium text-gray-700 mb-1">Access Token</label>
-                <input
-                  type="password"
-                  id="token"
-                  name="token"
-                  required
-                  placeholder="vercel_token_..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                />
+          <div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (e.target.elements.token.value.trim()) handleSaveToken(e.target.elements.token.value.trim());
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="token" className="block text-sm font-medium text-gray-700 mb-1">Access Token</label>
+                  <input
+                    type="password"
+                    id="token"
+                    name="token"
+                    required
+                    placeholder="vercel_token_..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-sm"
+                >
+                  Connect Account
+                </button>
               </div>
-              <button
-                type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition-colors shadow-sm"
-              >
-                Connect Account
-              </button>
-            </div>
-          </form>
+            </form>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (Demo_Token_Access) handleSaveToken(Demo_Token_Access);
+            }} className='mt-2'>
+              <div className="space-y-4">
+                <button
+                  type="submit"
+                  className="w-full hover:bg-gray-200 border-2 text-gray-800 border-gray-800 font-semibold py-3 rounded-lg transition-colors shadow-sm"
+                >
+                  Demo
+                </button>
+              </div>
+            </form>
+          </div>
           <div className="mt-6 text-center">
             <a
               href="https://vercel.com/account/tokens"
@@ -220,7 +236,7 @@ function App() {
               rel="noopener noreferrer"
               className="text-sm text-indigo-600 hover:underline"
             >
-              How to get a token?
+              How to get your own token?
             </a>
           </div>
         </div>
@@ -310,7 +326,7 @@ function App() {
 
           {loading && projects.length === 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map(i => (
+              {[1, 2, 3, 4].map(i => (
                 <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 h-80 animate-pulse">
                   <div className="h-40 bg-gray-200 rounded-t-xl" />
                   <div className="p-6 space-y-4">
@@ -340,7 +356,7 @@ function App() {
                     className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-200/60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 overflow-hidden flex flex-col h-full"
                   >
                     {/* Screenshot or Favicon Section */}
-                    <div className="relative h-48 bg-gray-100 overflow-hidden border-b border-gray-100">
+                    <div className="relative h-60 bg-gray-100 overflow-hidden border-b border-gray-100">
                       {screenshotUrl ? (
                         <img
                           src={screenshotUrl}
@@ -348,27 +364,26 @@ function App() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+                        <div className="w-full h-full bg-linear-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
                           <Favicon project={project} size="large" />
                         </div>
                       )}
                       <div className="absolute top-3 right-3">
-                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                          latestDeploy?.readyState === 'READY' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${latestDeploy?.readyState === 'READY' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                          }`}>
                           {latestDeploy?.readyState || 'Unknown'}
                         </span>
                       </div>
                     </div>
-                    
-                    <div className="p-5 flex-grow flex flex-col">
+
+                    <div className="p-5 grow flex flex-col">
                       <div className="flex items-center gap-3 mb-4">
                         <Favicon project={project} size="small" />
                         <h3 className="text-lg font-bold text-gray-900 truncate">
                           {project.link?.repo || project.name}
                         </h3>
                       </div>
-                      
+
                       <div className="mt-auto space-y-3">
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <span className="flex items-center gap-1">
@@ -393,14 +408,14 @@ function App() {
                                 Open Site
                               </button>
                             </a>
-                            <button 
-                              className="px-3 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors"
+                            <button
+                              className="px-3 py-2 bg-white border border-indigo-200 hover:bg-indigo-50 text-indigo-600  rounded-lg transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openDetail(project);
                               }}
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-6 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
                             </button>
@@ -434,12 +449,12 @@ function App() {
 
       {/* Detail modal */}
       {selectedProject && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
           onClick={closeDetail}
         >
-          <div 
-            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          <div
+            className="bg-white border border-gray-200 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
