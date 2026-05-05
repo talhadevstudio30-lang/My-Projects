@@ -26,7 +26,7 @@ function App() {
     setError(null);
    try {
       const res = await fetch("https://api.vercel.com/v9/projects?withDeployments=true", {
-        headers: { Authorization: `Bearer ${token || import.meta.env.VITE_VERCEL_TOKEN}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
 
@@ -175,16 +175,47 @@ function App() {
     return name.includes(search) || repo.includes(search);
   });
 
-const Demo_Btn = (e) => {
-  e.preventDefault();
-
+const Demo_Btn = async () => {
   const demoToken = import.meta.env.VITE_VERCEL_TOKEN;
-
-  if (!demoToken) return;
+  
+  if (!demoToken) {
+    alert("Demo token is not configured. Please check your environment variables.");
+    return;
+  }
 
   setToken(demoToken);
-  fetchProjects(); // optional
-  console.log(demoToken)
+  localStorage.setItem('VERCEL_TOKEN', demoToken);
+  
+  // Trigger project fetch with the demo token
+  try {
+    setLoading(true);
+    const res = await fetch("https://api.vercel.com/v9/projects?withDeployments=true", {
+      headers: { Authorization: `Bearer ${demoToken}` },
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        throw new Error("Invalid or expired demo token");
+      }
+      throw new Error("Failed to fetch projects");
+    }
+
+    const data = await res.json();
+    setProjects(data.projects || []);
+    console.log(data);
+    // Fetch screenshots for all projects
+    data.projects?.forEach(project => {
+      const alias = project.targets?.production?.alias?.[0];
+      if (alias) {
+        fetchScreenshot(project.id, alias);
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
 };
  
   // Token Input View
