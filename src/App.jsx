@@ -24,30 +24,11 @@ function App() {
   const fetchProjects = async () => {
     setLoading(true);
     setError(null);
-    try {
-      // Prefer server-side proxy to avoid exposing tokens and to prevent CORS / env differences after deployment
-      let res;
-      try {
-        res = await fetch('/api/vercel-projects');
-        // If proxy responds with 400 meaning it's not configured, fall back to client-side call
-        if (res.status === 400) {
-          const proxyBody = await res.json();
-          console.warn('Proxy returned 400:', proxyBody);
-          // Fall back to client-side fetch below
-          res = null;
-        }
-      } catch (proxyErr) {
-        console.warn('Proxy fetch failed, falling back to client fetch:', proxyErr);
-        res = null;
-      }
+   try {
+      const res = await fetch("https://api.vercel.com/v9/projects?withDeployments=true", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      if (!res) {
-        // Client-side fetch using token from local state/environment
-        if (!token) throw new Error('No Vercel token available for client-side request');
-        res = await fetch("https://api.vercel.com/v9/projects?withDeployments=true", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
 
       if (!res.ok) {
         if (res.status === 401) {
@@ -236,9 +217,16 @@ function App() {
               </div>
             </form>
             <form onSubmit={(e) => {
-              e.preventDefault();
-              if (Demo_Token_Access) handleSaveToken(Demo_Token_Access);
-            }} className='mt-2'>
+  e.preventDefault();
+
+  if (!Demo_Token_Access) {
+    alert("Token not found in production");
+    console.log("ENV:", import.meta.env);
+    return;
+  }
+
+  handleSaveToken(Demo_Token_Access);
+}} className='mt-2'>
               <div className="space-y-4">
                 <button
                   type="submit"
