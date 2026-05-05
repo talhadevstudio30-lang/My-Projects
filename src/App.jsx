@@ -203,7 +203,7 @@ const Demo_Btn = async () => {
     const data = await res.json();
     setProjects(data.projects || []);
     console.log(data);
-    // Fetch screenshots for all projects
+
     data.projects?.forEach(project => {
       const alias = project.targets?.production?.alias?.[0];
       if (alias) {
