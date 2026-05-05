@@ -25,9 +25,29 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("https://api.vercel.com/v9/projects?withDeployments=true", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Prefer server-side proxy to avoid exposing tokens and to prevent CORS / env differences after deployment
+      let res;
+      try {
+        res = await fetch('/api/vercel-projects');
+        // If proxy responds with 400 meaning it's not configured, fall back to client-side call
+        if (res.status === 400) {
+          const proxyBody = await res.json();
+          console.warn('Proxy returned 400:', proxyBody);
+          // Fall back to client-side fetch below
+          res = null;
+        }
+      } catch (proxyErr) {
+        console.warn('Proxy fetch failed, falling back to client fetch:', proxyErr);
+        res = null;
+      }
+
+      if (!res) {
+        // Client-side fetch using token from local state/environment
+        if (!token) throw new Error('No Vercel token available for client-side request');
+        res = await fetch("https://api.vercel.com/v9/projects?withDeployments=true", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
 
       if (!res.ok) {
         if (res.status === 401) {
