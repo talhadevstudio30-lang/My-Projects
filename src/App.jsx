@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 function App() {
-  const hellobhai = import.meta.env.VITE_VERCEL_TOKEN;
+  const hellobhai = import.meta.env.VITE_VERCEL_TOKEN
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -15,6 +15,7 @@ function App() {
   // Image loading states
   const [iconErrors, setIconErrors] = useState({});
   const [screenshots, setScreenshots] = useState({});
+
 
   useEffect(() => {
     if (token) {
@@ -31,18 +32,10 @@ function App() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        
         if (res.status === 401) {
-          throw new Error("Invalid or expired Vercel token. Please check your token and try again.");
-        } else if (res.status === 403) {
-          throw new Error(
-            `Access forbidden: ${errorData.error?.message || 'Your token may lack the required permissions. Make sure it has "Full Account" scope.'}`
-          );
-        } else if (res.status === 429) {
-          throw new Error("Too many requests. Please wait a moment and try again.");
+          throw new Error("Invalid or expired Vercel token");
         }
-        throw new Error(`Failed to fetch projects (Status: ${res.status}). ${errorData.error?.message || 'Unknown error occurred'}`);
+        throw new Error("Failed to fetch projects");
       }
 
       const data = await res.json();
@@ -56,13 +49,8 @@ function App() {
         }
       });
     } catch (err) {
-      console.error('Fetch projects error:', err);
+      console.error(err);
       setError(err.message);
-      
-      // Auto-logout if token is invalid
-      if (err.message.includes('401') || err.message.includes('403')) {
-        handleLogout();
-      }
     } finally {
       setLoading(false);
     }
@@ -73,16 +61,22 @@ function App() {
     setToken(newToken);
   };
 
+  const Demo_Btn = (e) => {
+    e.preventDefault();
+
+     const demoToken = import.meta.env.VITE_VERCEL_TOKEN;
+
+   if (!demoToken) {
+  console.error("Demo token is not configured");
+}
+     localStorage.setItem('VERCEL_TOKEN', demoToken);
+    setToken(demoToken);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('VERCEL_TOKEN');
     setToken('');
     setProjects([]);
-    setError(null);
-    setSearchTerm('');
-    setSelectedProject(null);
-    setSelectedDeployment(null);
-    setIconErrors({});
-    setScreenshots({});
   };
 
   const fetchScreenshot = async (projectId, domain) => {
@@ -194,23 +188,6 @@ function App() {
     return name.includes(search) || repo.includes(search);
   });
 
-  const handleDemoClick = (e) => {
-    e.preventDefault();
-
-    if (!hellobhai || hellobhai === 'undefined') {
-      const manualToken = prompt(
-        "Demo token is not configured. Please enter your Vercel Personal Access Token:\n\n(Get one at https://vercel.com/account/tokens)",
-        ""
-      );
-      if (manualToken && manualToken.trim()) {
-        handleSaveToken(manualToken.trim());
-      }
-      return;
-    }
-
-    handleSaveToken(hellobhai);
-  };
-
   // Token Input View
   if (!token) {
     return (
@@ -228,8 +205,7 @@ function App() {
           <div>
             <form onSubmit={(e) => {
               e.preventDefault();
-              const inputToken = e.target.elements.token.value.trim();
-              if (inputToken) handleSaveToken(inputToken);
+              if (e.target.elements.token.value.trim()) handleSaveToken(e.target.elements.token.value.trim());
             }}>
               <div className="space-y-4">
                 <div>
@@ -251,14 +227,16 @@ function App() {
                 </button>
               </div>
             </form>
-            <div className="mt-3">
-              <button 
-                onClick={handleDemoClick}
-                className="w-full hover:bg-gray-100 border-2 text-gray-800 border-gray-300 font-semibold py-3 rounded-lg transition-colors shadow-sm"
-              >
-                {hellobhai && hellobhai !== 'undefined' ? 'Use Demo Token' : 'Enter Token Manually'}
-              </button>
-            </div>
+            <form onClick={Demo_Btn}>
+              <div className="space-y-4 mt-2">
+              <button
+                  type="submit"
+                  className="w-full hover:bg-gray-200 border-2 text-gray-800 border-gray-800 font-semibold py-3 rounded-lg transition-colors shadow-sm"
+                >
+                  Demo
+                </button>
+              </div>
+            </form>
           </div>
           <div className="mt-6 text-center">
             <a
@@ -357,7 +335,7 @@ function App() {
 
           {loading && projects.length === 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map(i => (
+              {[1, 2, 3, 4].map(i => (
                 <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 h-80 animate-pulse">
                   <div className="h-40 bg-gray-200 rounded-t-xl" />
                   <div className="p-6 space-y-4">
@@ -395,18 +373,13 @@ function App() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+                        <div className="w-full h-full bg-linear-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
                           <Favicon project={project} size="large" />
                         </div>
                       )}
                       <div className="absolute top-3 right-3">
-                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                          latestDeploy?.readyState === 'READY' 
-                            ? 'bg-green-100 text-green-700' 
-                            : latestDeploy?.readyState === 'ERROR'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${latestDeploy?.readyState === 'READY' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                          }`}>
                           {latestDeploy?.readyState || 'Unknown'}
                         </span>
                       </div>
@@ -445,7 +418,7 @@ function App() {
                               </button>
                             </a>
                             <button
-                              className="px-3 py-2 bg-white border border-indigo-200 hover:bg-indigo-50 text-indigo-600 rounded-lg transition-colors"
+                              className="px-3 py-2 bg-white border border-indigo-200 hover:bg-indigo-50 text-indigo-600  rounded-lg transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openDetail(project);
@@ -472,20 +445,12 @@ function App() {
               </div>
               <h3 className="text-lg font-medium text-gray-900">No projects found</h3>
               <p className="text-gray-500 mt-1">Try adjusting your search term or refresh the list.</p>
-              <div className="flex items-center justify-center gap-3 mt-4">
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="text-indigo-600 font-medium hover:underline"
-                >
-                  Clear search
-                </button>
-                <button
-                  onClick={fetchProjects}
-                  className="text-indigo-600 font-medium hover:underline"
-                >
-                  Refresh projects
-                </button>
-              </div>
+              <button
+                onClick={() => setSearchTerm('')}
+                className="mt-4 text-indigo-600 font-medium hover:underline"
+              >
+                Clear search
+              </button>
             </div>
           )}
         </div>
@@ -494,7 +459,7 @@ function App() {
       {/* Detail modal */}
       {selectedProject && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
           onClick={closeDetail}
         >
           <div
@@ -546,7 +511,7 @@ function App() {
                             className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 hover:shadow-sm transition-all group"
                           >
                             <span className="text-sm text-gray-700 truncate mr-2 font-medium">{url}</span>
-                            <svg className="w-4 h-4 text-gray-400 group-hover:text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-gray-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                             </svg>
                           </a>
@@ -562,13 +527,7 @@ function App() {
                     <div>
                       <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Status</h3>
                       <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${
-                          selectedDeployment.readyState === 'READY' 
-                            ? 'bg-green-500' 
-                            : selectedDeployment.readyState === 'ERROR'
-                            ? 'bg-red-500'
-                            : 'bg-yellow-500'
-                        }`} />
+                        <span className={`w-2 h-2 rounded-full ${selectedDeployment.readyState === 'READY' ? 'bg-green-500' : 'bg-yellow-500'}`} />
                         <p className="text-gray-900 font-semibold text-sm">{selectedDeployment.readyState}</p>
                       </div>
                     </div>
@@ -623,9 +582,6 @@ function App() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <svg className="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                  </svg>
                   <p className="text-gray-400 italic">No deployment data available for this project.</p>
                 </div>
               )}
@@ -637,4 +593,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 
