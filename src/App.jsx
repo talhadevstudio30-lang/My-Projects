@@ -26,7 +26,7 @@ function App() {
     setError(null);
    try {
       const res = await fetch("https://api.vercel.com/v9/projects?withDeployments=true", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token || import.meta.env.VITE_VERCEL_TOKEN}` },
       });
 
 
@@ -175,8 +175,18 @@ function App() {
     return name.includes(search) || repo.includes(search);
   });
 
-  const Demo_Token_Access = import.meta.env.VITE_VERCEL_TOKEN;
+const Demo_Btn = (e) => {
+  e.preventDefault();
 
+  const demoToken = import.meta.env.VITE_VERCEL_TOKEN;
+
+  if (!demoToken) return;
+
+  setToken(demoToken);
+  fetchProjects(); // optional
+  console.log(demoToken)
+};
+ 
   // Token Input View
   if (!token) {
     return (
@@ -216,26 +226,14 @@ function App() {
                 </button>
               </div>
             </form>
-            <form onSubmit={(e) => {
-  e.preventDefault();
-
-  if (!Demo_Token_Access) {
-    alert("Token not found in production");
-    console.log("ENV:", import.meta.env);
-    return;
-  }
-
-  handleSaveToken(Demo_Token_Access);
-}} className='mt-2'>
-              <div className="space-y-4">
-                <button
+              <div className="space-y-4 mt-2">
+                <button onClick={Demo_Btn}
                   type="submit"
                   className="w-full hover:bg-gray-200 border-2 text-gray-800 border-gray-800 font-semibold py-3 rounded-lg transition-colors shadow-sm"
                 >
                   Demo
                 </button>
               </div>
-            </form>
           </div>
           <div className="mt-6 text-center">
             <a
