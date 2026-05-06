@@ -7,6 +7,8 @@ function App() {
   const [token, setToken] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [logout_btn, setlogout_btn] = useState(true);
+  const [login_btn, setlogin_btn] = useState(false)
 
   // Detail modal states
   const [selectedProject, setSelectedProject] = useState(null);
@@ -20,7 +22,7 @@ function App() {
   useEffect(() => {
     const savedLoginState = localStorage.getItem('VERCEL_LOGIN_STATE');
     const savedToken = localStorage.getItem('VERCEL_TOKEN');
-    
+
     if (savedLoginState === 'true' && savedToken) {
       setToken(savedToken);
       setIsLoggedIn(true);
@@ -51,6 +53,7 @@ function App() {
       }
 
       const data = await res.json();
+      console.log(data);
       setProjects(data.projects || []);
 
       // Fetch screenshots for all projects
@@ -75,7 +78,7 @@ function App() {
       localStorage.setItem('VERCEL_LOGIN_STATE', 'true');
     }
     // Don't save to localStorage for demo/temporary access
-    
+
     // Update state regardless
     setToken(newToken);
     setIsLoggedIn(true);
@@ -84,7 +87,15 @@ function App() {
     setSearchTerm('');
     setIconErrors({});
     setScreenshots({});
+    setlogout_btn(true);
+    setlogin_btn(false);
+    account_btns()
   };
+
+  function account_btns() {
+    setlogout_btn(true);
+    setlogin_btn(false)
+  }
 
   const handleDemoAccess = () => {
     const demoToken = import.meta.env.VITE_VERCEL_TOKEN;
@@ -92,13 +103,15 @@ function App() {
       // Pass 'false' to indicate this is temporary access
       handleSaveToken(demoToken, false);
     }
+    setlogout_btn(false);
+    setlogin_btn(true)
   };
 
   const handleLogout = () => {
     // Clear all login-related data from localStorage
     localStorage.removeItem('VERCEL_TOKEN');
     localStorage.removeItem('VERCEL_LOGIN_STATE');
-    
+
     // Reset all state to initial values
     setToken('');
     setIsLoggedIn(false);
@@ -128,6 +141,7 @@ function App() {
       }
 
       const data = await response.json();
+
 
       if (data.status === 'success' && data.data?.screenshot?.url) {
         setScreenshots(prev => ({
@@ -317,16 +331,19 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       {!selectedProject && (
+
         <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
           <header className="mb-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-                  My Projects
+                <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+                  {projects.length > 0 && projects[0]?.latestDeployments?.[0]?.creator?.username ? `${projects[0].latestDeployments[0].creator.username}'s Projects`
+                    : 'Projects'}
                 </h1>
                 <p className="mt-2 text-lg text-gray-500">
-                  Manage and explore your Vercel deployments.
-                </p>
+                  {projects.length > 0 && projects[0]?.latestDeployments?.[0]?.creator?.username ? `Hey ${projects[0].latestDeployments[0].creator.username} 👋 Ready to manage your Vercel deployments.`
+                    : `Hey 👋
+Ready to manage your Vercel deployments.`}               </p>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -339,19 +356,34 @@ function App() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
-                <button
+                {logout_btn && (
+                  <button
+                    onClick={() => {
+                    if (window.confirm(`Hi ${projects[0]?.latestDeployments?.[0]?.creator?.username} 👋
+
+Are you sure you want to log out?
+
+Thanks for using our web app 💙
+If you face any issues, feel free to report them.`)) {
+                        handleLogout();
+                      }
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 border border-red-200 hover:border-red-300"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Logout
+                  </button>
+                )}
+                {login_btn && (<button
                   onClick={() => {
-                    if (window.confirm('Are you sure you want to logout? Your login state will be cleared, and you will need to enter your token again to access the app.')) {
-                      handleLogout();
-                    }
+                    handleLogout();
                   }}
                   className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 border border-red-200 hover:border-red-300"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  Logout
-                </button>
+                  Login
+                </button>)}
               </div>
             </div>
 
@@ -411,7 +443,7 @@ function App() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+                        <div className="w-full h-full bg-linear-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
                           <Favicon project={project} size="large" />
                         </div>
                       )}
@@ -497,11 +529,11 @@ function App() {
       {/* Detail modal */}
       {selectedProject && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-start sm:items-center bg-white sm:bg-transparent justify-center p-0 sm:p-4 backdrop-blur-sm"
           onClick={closeDetail}
         >
           <div
-            className="bg-white border border-gray-200 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white sm:border border-gray-200 rounded-none sm:rounded-2xl shadow-none sm:shadow-2xl max-w-2xl w-full max-h-[99vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
