@@ -5,59 +5,9 @@
     <link rel="icon" type="image/svg+xml" href="App-Icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Projects</title>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-
-    <style>
-      body {
-        margin: 0;
-        min-height: 100vh;
-        overflow-x: hidden;
-        background: linear-gradient(
-          to bottom right,
-          #f7f7fb,
-          #faf7fb,
-          #eef9ff
-        );
-        position: relative;
-      }
-
-      /* Pink Blur */
-      body::before {
-        content: "";
-        position: fixed;
-        top: 120px;
-        right: 180px;
-        width: 420px;
-        height: 420px;
-        background: rgba(255, 192, 203, 0.35);
-        border-radius: 9999px;
-        filter: blur(120px);
-        z-index: -1;
-      }
-
-      /* Blue Blur */
-      body::after {
-        content: "";
-        position: fixed;
-        bottom: 40px;
-        right: 40px;
-        width: 520px;
-        height: 520px;
-        background: rgba(173, 216, 230, 0.35);
-        border-radius: 9999px;
-        filter: blur(140px);
-        z-index: -1;
-      }
-
-      #root {
-        min-height: 100vh;
-      }
-    </style>
   </head>
-
   <body>
     <div id="root"></div>
-
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
