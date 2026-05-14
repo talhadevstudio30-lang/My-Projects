@@ -3,7 +3,6 @@ import {
   createBrowserRouter,
   RouterProvider,
   Outlet,
-  Navigate,
 } from "react-router-dom";
 
 import Demo_Access from "./components/Demo-Access/Demo-Access";
@@ -13,6 +12,26 @@ import SideBar from "./components/SideBar";
 import Lock from "./components/Lock";
 import Feedback from "./components/Feedback";
 import Contact from "./components/Contact";
+
+// Layout Component - moved outside App to prevent recreation on every render
+function AppLayout({ isLoggedIn, isSidebarOpen, setIsSidebarOpen, handleLogout, firstName, lastName }) {
+  return (
+    <div className="flex min-h-screen">
+      {isLoggedIn && (
+        <SideBar
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+          handleLogout={handleLogout}
+          firstName={firstName}
+          lastName={lastName}
+        />
+      )}
+      <div className={isLoggedIn ? "flex-1 md:ml-60" : "flex-1"}>
+        <Outlet />
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [firstName, setFirstName] = useState(localStorage.getItem('USER_FIRST_NAME') || '');
@@ -31,42 +50,29 @@ export default function App() {
     setIsLoggedIn(false);
   };
 
-  // Layout Component
-  function AppLayout() {
-    return (
-      <div className="flex min-h-screen">
-        {isLoggedIn && (
-          <SideBar
-            isSidebarOpen={isSidebarOpen}
-            setIsSidebarOpen={setIsSidebarOpen}
-            handleLogout={handleLogout}
-            firstName={firstName}
-            lastName={lastName}
-          />
-        )}
-        <div className={isLoggedIn ? "flex-1 md:ml-60" : "flex-1"}>
-          <Outlet />
-        </div>
-      </div>
-    );
-  }
-
-  // Router
+  // Router - created inside but with elements that use the current state
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <AppLayout />,
+      element: (
+        <AppLayout
+          isLoggedIn={isLoggedIn}
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+          handleLogout={handleLogout}
+          firstName={firstName}
+          lastName={lastName}
+        />
+      ),
       children: [
         {
           index: true,
           element: (
             <Dashboard
               isLoggedIn={isLoggedIn}
-              firstName={firstName} setFirstName={setFirstName} 
-             lastName={lastName} setLastName={setLastName}
+              firstName={firstName} setFirstName={setFirstName}
+              lastName={lastName} setLastName={setLastName}
               setIsLoggedIn={setIsLoggedIn}
-              isSidebarOpen={isSidebarOpen}
-              setIsSidebarOpen={setIsSidebarOpen}
               handleLogout={handleLogout}
             />
           ),
@@ -97,6 +103,26 @@ export default function App() {
 
   return (
     <>
+      <button
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+        aria-label="Toggle menu"
+      >
+        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {isSidebarOpen ? (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+
+      {isSidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/20 z-30 backdrop-blur-[3px] transition-opacity duration-300"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
       {/* Global background blur orbs */}
       <div className="app-bg-orbs">
         <div className="app-bg-orb-1" />

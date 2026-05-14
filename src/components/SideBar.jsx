@@ -13,33 +13,26 @@ function SideBar({isSidebarOpen , setIsSidebarOpen , handleLogout , firstName , 
   return (
     <div>
       <nav className={`
-          fixed left-0 top-0 z-50 h-screen
-          flex flex-col gap-4 p-0.5 pt-16
-          bg-white/20 backdrop-blur-xl
-          border-r border-white/30
-          shadow-[8px_0_40px_0_rgba(99,102,241,0.08),inset_-1px_0_0_rgba(255,255,255,0.4)]
+          fixed left-0 top-0 z-40 h-screen
+          flex flex-col gap-4 p-3 pt-16
+          bg-white/40 backdrop-blur-2xl 
+          border-r border-white/60
+          shadow-[8px_0_32px_0_rgba(0,0,0,0.05)]
           transition-transform duration-300 ease-in-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           md:translate-x-0
           w-60
-      `}
-      style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.10) 100%)',
-      }}
-      >
-          {/* Subtle inner highlight at the top */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/70 to-transparent" />
-
+      `}>
           {/* Header Section */}
           <div className="px-4 mb-4">
-              <h1 className="text-4xl font-bold truncate text-indigo-600 drop-shadow-sm">
+              <h1 className="text-4xl font-bold truncate text-indigo-600">
                   {firstName} {lastName}
               </h1>
-              <p className="text-md text-gray-500/80">Administrator</p>
+              <p className="text-md text-gray-500">Administrator</p>
           </div>
       
           {/* Navigation Items */}
-          <div className="flex-1 overflow-y-auto space-y-1 px-2">
+          <div className="flex-1 overflow-y-auto space-y-1">
               {/* Active Dashboard Link */}
               <Link
                   to="/"
@@ -48,10 +41,10 @@ function SideBar({isSidebarOpen , setIsSidebarOpen , handleLogout , firstName , 
                     handleClick('dashboard');
                   }}
                   className={`
-                    flex items-center gap-4 px-4 py-3 rounded-[9px] transition-all duration-150
+                    flex items-center gap-4 px-4 py-3 rounded-[9px] transition-all duration-100
                     ${location.pathname === '/'
-                      ? 'bg-indigo-500/80 backdrop-blur-sm text-white shadow-[0_4px_16px_rgba(99,102,241,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] scale-[0.98] border border-indigo-400/40'
-                      : 'text-gray-600 hover:bg-white/40 hover:backdrop-blur-sm hover:text-indigo-600 hover:shadow-[0_2px_12px_rgba(99,102,241,0.12),inset_0_1px_0_rgba(255,255,255,0.5)] hover:border hover:border-white/50 active:scale-[0.97] border border-transparent'
+                      ? 'bg-indigo-600 text-white shadow-md scale-[0.98]'
+                      : 'text-gray-600 hover:bg-white/60 hover:text-indigo-600 hover:shadow-sm active:scale-[0.97]'
                     }
                     ${clickedItem === 'dashboard' ? 'scale-[0.97]' : ''}
                   `}
@@ -61,10 +54,10 @@ function SideBar({isSidebarOpen , setIsSidebarOpen , handleLogout , firstName , 
       
               {/* Navigation Items */}
               {[
-                  { icon: "info", label: "About", path: "/about" },
-                  { icon: "lock", label: "Lock System", path: "/lock" },
-                  { icon: "feedback", label: "Feedback", path: "/feedback" },
-                  { icon: "contact_mail", label: "Contact", path: "/contact" },
+                  { label: "About", path: "/about" },
+                  { label: "Lock System", path: "/lock" },
+                  { label: "Feedback", path: "/feedback" },
+                  { label: "Contact", path: "/contact" },
               ].map((item, index) => (
                   <Link
                       key={index}
@@ -74,10 +67,10 @@ function SideBar({isSidebarOpen , setIsSidebarOpen , handleLogout , firstName , 
                         handleClick(item.path);
                       }}
                       className={`
-                        flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-150
+                        flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-100
                         ${location.pathname === item.path
-                          ? 'bg-indigo-500/80 backdrop-blur-sm text-white shadow-[0_4px_16px_rgba(99,102,241,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] scale-[0.98] border border-indigo-400/40'
-                          : 'text-gray-600 hover:bg-white/40 hover:backdrop-blur-sm hover:text-indigo-600 hover:shadow-[0_2px_12px_rgba(99,102,241,0.12),inset_0_1px_0_rgba(255,255,255,0.5)] hover:border hover:border-white/50 active:scale-[0.97] border border-transparent'
+                          ? 'bg-indigo-600 text-white shadow-md scale-[0.98]'
+                          : 'text-gray-600 hover:bg-white/60 hover:text-indigo-600 hover:shadow-sm active:scale-[0.97]'
                         }
                         ${clickedItem === item.path ? 'scale-[0.97]' : ''}
                       `}
@@ -90,24 +83,20 @@ function SideBar({isSidebarOpen , setIsSidebarOpen , handleLogout , firstName , 
               ))}
           </div>
       
-          {/* Footer/Logout Section */}
-          <div className="border-t border-white/30 pt-4"
-               style={{ borderImage: 'linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent) 1' }}>
+          {/* Footer/Logout Section (Optional) */}
+          <div className="border-t border-gray-200 pt-4">
               <button
                   onClick={() => {
                     handleClick('logout');
                     handleLogout();
                   }}
                   className={`
-                    w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-150
-                    text-gray-600 border border-transparent
-                    hover:bg-red-500/10 hover:backdrop-blur-sm hover:text-red-500 hover:border-red-300/30
-                    hover:shadow-[0_2px_12px_rgba(239,68,68,0.10),inset_0_1px_0_rgba(255,255,255,0.4)]
-                    active:scale-[0.97]
-                    ${clickedItem === 'logout' ? 'scale-[0.97] bg-red-500/10' : ''}
+                    w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-100
+                    text-gray-600 hover:bg-red-50 hover:text-red-600 active:scale-[0.97]
+                    ${clickedItem === 'logout' ? 'scale-[0.97] bg-red-50' : ''}
                   `}
               >
-                  <span className="material-symbols-outlined text-[20px] transition-all duration-200">
+                  <span className="material-symbols-outlined text-[20px] transition-all duration-200 hover:text-red-600">
                       logout
                   </span>
                   <span className="text-sm font-medium">Logout</span>

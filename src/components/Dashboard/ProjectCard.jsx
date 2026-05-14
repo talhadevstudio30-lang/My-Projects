@@ -22,21 +22,9 @@ const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpen
   return (
     <div
       onClick={() => onOpenDetail(project)}
-      className="group relative
-        backdrop-blur-xl bg-white/25
-        rounded-2xl overflow-hidden flex flex-col h-full
-        border border-white/50
-        shadow-[0_4px_24px_rgba(99,102,241,0.08),inset_0_1px_0_rgba(255,255,255,0.7)]
-        hover:shadow-[0_8px_32px_rgba(99,102,241,0.15),inset_0_1px_0_rgba(255,255,255,0.8)]
-        hover:bg-white/35 hover:border-white/70
-        transition-all duration-300 cursor-pointer
-        focus:outline-none focus:ring-2 focus:ring-indigo-400/60"
+      className="group backdrop-blur-xl bg-[#ffffffd1] rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 border-2 border-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 overflow-hidden flex flex-col h-full"
     >
-      {/* Top shimmer line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent z-10" />
-
-      {/* Screenshot / Preview */}
-      <div className="relative h-60 overflow-hidden border-b border-white/30">
+      <div className="relative h-60 bg-gray-100 overflow-hidden border-b border-gray-100">
         {screenshotUrl ? (
           <img
             src={screenshotUrl}
@@ -44,49 +32,28 @@ const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpen
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-indigo-50/60 to-purple-50/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="w-full h-full bg-linear-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
             <Favicon project={project} size="large" iconErrors={iconErrors} handleIconError={handleIconError} />
           </div>
         )}
-
-        {/* Status badge */}
         <div className="absolute top-3 right-3">
-          <span className={`
-    relative px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest
-    backdrop-blur-md
-    before:absolute before:inset-0 before:rounded-full
-    before:bg-gradient-to-b before:from-white/40 before:to-transparent before:pointer-events-none
-    ${latestDeploy?.readyState === 'READY'
-              ? `bg-gradient-to-br from-green-300/20 via-emerald-200/15 to-green-400/10
-         text-emerald-700
-         border border-green-300/40
-         shadow-[0_2px_12px_rgba(52,211,153,0.20),inset_0_1px_0_rgba(255,255,255,0.75),inset_0_-1px_0_rgba(52,211,153,0.15)]`
-              : `bg-gradient-to-br from-amber-300/20 via-yellow-200/15 to-amber-400/10
-         text-amber-700
-         border border-amber-300/40
-         shadow-[0_2px_12px_rgba(251,191,36,0.20),inset_0_1px_0_rgba(255,255,255,0.75),inset_0_-1px_0_rgba(251,191,36,0.15)]`
-            }
-  `}>
+          <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${latestDeploy?.readyState === 'READY' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+            }`}>
             {latestDeploy?.readyState || 'Unknown'}
           </span>
         </div>
       </div>
 
-      {/* Card Body */}
       <div className="p-4 grow flex flex-col">
         <div className="flex items-center gap-3 mb-4">
           <Favicon project={project} size="small" iconErrors={iconErrors} handleIconError={handleIconError} />
-          <h3 className="text-lg font-bold truncate
-            text-transparent bg-clip-text
-            bg-gradient-to-br from-gray-900 via-gray-700 to-gray-500
-            [filter:drop-shadow(0_1px_1px_rgba(255,255,255,0.9))_drop-shadow(0_1px_4px_rgba(99,102,241,0.10))]">
+          <h3 className="text-lg font-bold text-gray-900 truncate">
             {project.link?.repo || project.name}
           </h3>
         </div>
 
         <div className="mt-auto space-y-3">
-          {/* Meta row */}
-          <div className="flex items-center justify-between text-xs text-gray-500/80">
+          <div className="flex items-center justify-between text-xs text-gray-600">
             <span className="flex items-center gap-1">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -96,7 +63,6 @@ const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpen
             <span>{formatDate(latestDeploy?.createdAt || project.createdAt)}</span>
           </div>
 
-          {/* Action buttons */}
           {projectUrl && (
             <div className="flex gap-2">
               <a
@@ -106,21 +72,12 @@ const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpen
                 className="flex-1"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button className="w-full py-2 text-sm font-semibold rounded-lg transition-all duration-150
-                  bg-gray-900/80 backdrop-blur-sm text-white
-                  border border-white/10
-                  shadow-[0_2px_10px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]
-                  hover:bg-black/90 hover:shadow-[0_4px_14px_rgba(0,0,0,0.3)]">
+                <button className="w-full py-2 bg-gray-900 hover:bg-black text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
                   Open Site
                 </button>
               </a>
               <button
-                className="px-3 py-2 rounded-lg transition-all duration-150
-                  bg-white/30 backdrop-blur-sm text-indigo-600
-                  border border-indigo-200/50
-                  shadow-[0_2px_8px_rgba(99,102,241,0.08),inset_0_1px_0_rgba(255,255,255,0.7)]
-                  hover:bg-white/50 hover:border-indigo-300/60
-                  hover:shadow-[0_2px_12px_rgba(99,102,241,0.15)]"
+                className="px-3 py-2 bg-white border border-indigo-200 hover:bg-indigo-50 text-indigo-600 rounded-lg transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
                   onOpenDetail(project);

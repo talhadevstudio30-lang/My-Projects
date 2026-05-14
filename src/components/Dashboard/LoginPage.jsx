@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from "react-router-dom";
 
 
-const LoginPage = ({ Handle_Create_Account_Btn, Token_inp, token_val , loginError ,  isValidating }) => {
+const LoginPage = ({ Handle_Create_Account_Btn , loginError ,  isValidating }) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full border border-gray-100">

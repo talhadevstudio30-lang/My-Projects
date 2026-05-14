@@ -7,8 +7,6 @@ import { encryptToken, decryptToken, getProjectUrl } from './utils';
 function Dashboard({
     isLoggedIn,
     setIsLoggedIn,
-    isSidebarOpen,
-    setIsSidebarOpen,
     handleLogout,
     firstName, lastName, setFirstName, setLastName
 }) {
@@ -87,7 +85,7 @@ function Dashboard({
                 setToken(decryptedToken);
             }
         }
-    }, [setIsLoggedIn]);
+    }, []);
 
     const handleSaveToken = (newToken) => {
         const encryptedToken = encryptToken(newToken);
@@ -182,26 +180,6 @@ function Dashboard({
 
     return (
         <>
-            <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-                aria-label="Toggle menu"
-            >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    {isSidebarOpen ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    ) : (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                    )}
-                </svg>
-            </button>
-
-            {isSidebarOpen && (
-                <div
-                    className="md:hidden fixed inset-0 bg-black/50 z-30 backdrop-blur-sm transition-opacity duration-300"
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-            )}
 
             <div className="min-h-screen">
                 {!selectedProject && (
