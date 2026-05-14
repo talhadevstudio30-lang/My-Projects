@@ -96,7 +96,7 @@ function Dashboard({
         setToken(newToken);
         setIsLoggedIn(true);
         setProjects([]);
-        setSearchTerm('');
+        setSearchTerm("");
         setIconErrors({});
         setScreenshots({});
     };

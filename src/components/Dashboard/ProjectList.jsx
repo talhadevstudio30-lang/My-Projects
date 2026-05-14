@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ProjectCard from './ProjectCard';
+import Dash_Header from './Dash-Header';
 
 const ProjectList = ({ projects, loading, searchTerm, onSearchChange, screenshots, iconErrors, handleIconError, onOpenDetail, onRefresh, firstName, lastName, onLogout }) => {
   const [visibleCount, setVisibleCount] = useState(6);
@@ -14,31 +15,19 @@ const ProjectList = ({ projects, loading, searchTerm, onSearchChange, screenshot
   const visibleProjects = filteredProjects.slice(0, visibleCount);
   const hasMoreProjects = visibleCount < filteredProjects.length;
 
+  const handle_input_change = (e) => {
+    onSearchChange(e.target.value);
+    setVisibleCount(6);
+  }
+
   return (
     <>
-      <div className='flex justify-center items-center border-b bg-white/40 border-white/60 px-6.5'>
-        <div className="mt-4 mb-4 relative lg:w-2xl md:w-full w-full">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-
-          <input
-            type="text"
-            placeholder="Search projects by name or repository..."
-            className="block w-full pl-10 pr-3 py-3 border border-white/60 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm"
-            value={searchTerm}
-            onChange={(e) => {
-              onSearchChange(e.target.value);
-              setVisibleCount(6);
-            }}
-          />
-        </div>
+      <div className='hidden md:block'>
+        <Dash_Header searchTerm={searchTerm} handle_input_change={handle_input_change} />
       </div>
       <div className="max-w-7xl mx-auto px-4 mb-2.5 md:px-7 py-8 md:py-10">
-        <header className="mb-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <header className="mb-4 md:mb-10">
+          <div className="grid md:flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
                 {lastName === "" ? `${firstName}${lastName}'s Projects`
@@ -48,6 +37,7 @@ const ProjectList = ({ projects, loading, searchTerm, onSearchChange, screenshot
                 Hey {`${firstName} ${lastName}`} 👋 Ready to manage your Vercel deployments.
               </p>
             </div>
+
             <div className="flex items-center gap-3">
               <button
                 onClick={onRefresh}
@@ -84,6 +74,9 @@ If you face any issues, feel free to report them.`)) {
           </div>
 
         </header>
+        <div className='block md:hidden'>
+          <Dash_Header searchTerm={searchTerm} handle_input_change={handle_input_change} />
+        </div>
 
         {loading && projects.length === 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
