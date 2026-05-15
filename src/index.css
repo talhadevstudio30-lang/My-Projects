@@ -5,6 +5,10 @@ body {
   position: relative;
   overflow-x: hidden;
 }
+/* 
+div {
+  border: 1px solid black;
+} */
 
 body::before {
   content: '';
@@ -33,7 +37,7 @@ body::before {
 .app-bg-orb-1 {
   width: 500px;
   height: 500px;
-  background: #6365f1ce;
+  background: #6365f1c5;
   top: -15%;
   left: -10%;
   opacity: 0.4;
@@ -42,7 +46,7 @@ body::before {
 .app-bg-orb-2 {
   width: 450px;
   height: 450px;
-  background: #ec489ace;
+  background: #ec489ac2;
   bottom: -15%;
   right: -10%;
   opacity: 0.35;
@@ -52,7 +56,7 @@ body::before {
 .app-bg-orb-3 {
   width: 380px;
   height: 380px;
-  background: #06b5d4d2;
+  background: #06b5d4c3;
   top: 10%;
   right: 10%;
   opacity: 0.3;
@@ -61,7 +65,7 @@ body::before {
 .app-bg-orb-4 {
   width: 320px;
   height: 320px;
-  background: #a955f7d1;
+  background: #a955f7c5;
   bottom: 10%;
   left: 10%;
   opacity: 0.3;
@@ -71,7 +75,7 @@ body::before {
 .app-bg-orb-5 {
   width: 260px;
   height: 260px;
-  background: #10b981d6;
+  background: #10b981c6;
   top: 45%;
   left: 45%;
   opacity: 0.25;

@@ -1,29 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import ProjectCard from './ProjectCard';
-import Dash_Header from './Dash-Header';
+import Dash_Header from './Dash_Header';
+import Account_Btn from './Account_Btn';
 
-const ProjectList = ({ projects, loading, searchTerm, onSearchChange, screenshots, iconErrors, handleIconError, onOpenDetail, onRefresh, firstName, lastName, onLogout }) => {
+const ProjectList = ({ projects, loading, searchTerm, onSearchChange, screenshots, iconErrors, handleIconError, onOpenDetail, onRefresh, firstName, lastName, onLogout, fetchScreenshotIfNeeded }) => {
   const [visibleCount, setVisibleCount] = useState(6);
 
-  const filteredProjects = projects.filter(project => {
-    const search = searchTerm.toLowerCase();
-    const name = project.name?.toLowerCase() || '';
-    const repo = project.link?.repo?.toLowerCase() || '';
-    return name.includes(search) || repo.includes(search);
-  });
+  const filteredProjects = useMemo(() => {
+    const search = (searchTerm || '').toLowerCase();
+    return projects.filter(project => {
+      const name = project.name?.toLowerCase() || '';
+      const repo = project.link?.repo?.toLowerCase() || '';
+      return name.includes(search) || repo.includes(search);
+    });
+  }, [projects, searchTerm]);
 
   const visibleProjects = filteredProjects.slice(0, visibleCount);
   const hasMoreProjects = visibleCount < filteredProjects.length;
 
-  const handle_input_change = (e) => {
-    onSearchChange(e.target.value);
+  // Debounced input handler to reduce re-renders while typing
+  const handle_input_change = useCallback((e) => {
+    const value = e.target.value;
+    onSearchChange(value);
     setVisibleCount(6);
+  }, [onSearchChange]);
+
+  const logout_alert = () => {
+    if (window.confirm(`Hi ${lastName === "" ? `${firstName}${lastName} 👋`
+      : `${firstName} ${lastName} 👋`}
+
+Are you sure you want to log out?
+
+Thanks for using our web app 💙
+If you face any issues, feel free to report them.`)) {
+      onLogout();
+    }
   }
 
   return (
     <>
       <div className='hidden md:block'>
         <Dash_Header searchTerm={searchTerm} handle_input_change={handle_input_change} />
+      </div>
+      <div className='block md:hidden'>
+        <Account_Btn onRefresh={onRefresh} loading={loading} logout_alert={logout_alert} />
       </div>
       <div className="max-w-7xl mx-auto px-4 mb-2.5 md:px-7 py-8 md:py-10">
         <header className="mb-4 md:mb-10">
@@ -37,42 +57,10 @@ const ProjectList = ({ projects, loading, searchTerm, onSearchChange, screenshot
                 Hey {`${firstName} ${lastName}`} 👋 Ready to manage your Vercel deployments.
               </p>
             </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onRefresh}
-                disabled={loading}
-                className="text-gray-500 border px-3 py-2 rounded-[9px] shadow-sm cursor-pointer hover:bg-white/60 border-white/60 bg-white/70 transition-colors disabled:opacity-50"
-                title="Refresh projects"
-              >
-                <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </button>
-
-              <button
-                onClick={() => {
-                  if (window.confirm(`Hi ${lastName === "" ? `${firstName}${lastName} 👋`
-                    : `${firstName} ${lastName} 👋`}
-
-Are you sure you want to log out?
-
-Thanks for using our web app 💙
-If you face any issues, feel free to report them.`)) {
-                    onLogout();
-                  }
-                }}
-                className="px-4 py-2 text-sm font-medium bg-red-100 text-red-600 hover:bg-red-300 cursor-pointer rounded-[9px] transition-colors flex items-center gap-2 border border-red-200 hover:border-red-300"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Logout
-              </button>
-
-            </div>
           </div>
-
+          <div className='hidden md:block'>
+            <Account_Btn onRefresh={onRefresh} loading={loading} logout_alert={logout_alert} />
+          </div>
         </header>
         <div className='block md:hidden'>
           <Dash_Header searchTerm={searchTerm} handle_input_change={handle_input_change} />
@@ -107,6 +95,7 @@ If you face any issues, feel free to report them.`)) {
                   iconErrors={iconErrors}
                   handleIconError={handleIconError}
                   onOpenDetail={onOpenDetail}
+                  fetchScreenshotIfNeeded={fetchScreenshotIfNeeded}
                 />
               ))}
             </div>

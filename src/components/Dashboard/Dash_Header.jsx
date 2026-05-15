@@ -25,4 +25,4 @@ function Dash_Header({searchTerm , handle_input_change}) {
     )
 }
 
-export default Dash_Header
+export default Dash_Header;

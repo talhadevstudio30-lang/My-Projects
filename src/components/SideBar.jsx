@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { Link, useLocation } from "react-router-dom";
 
 function SideBar({isSidebarOpen , setIsSidebarOpen , handleLogout , firstName , lastName}) {
   const location = useLocation();
   const [clickedItem, setClickedItem] = useState(null);
 
-  const handleClick = (itemId) => {
+  const handleClick = useCallback((itemId) => {
     setClickedItem(itemId);
     setTimeout(() => setClickedItem(null), 150);
-  };
+  }, []);
+
+  const navItems = [
+    { label: "About", path: "/about" },
+    { label: "Lock System", path: "/lock" },
+    { label: "Feedback", path: "/feedback" },
+    { label: "Contact", path: "/contact" },
+  ];
 
   return (
     <div>
@@ -53,14 +60,9 @@ function SideBar({isSidebarOpen , setIsSidebarOpen , handleLogout , firstName , 
               </Link>
       
               {/* Navigation Items */}
-              {[
-                  { label: "About", path: "/about" },
-                  { label: "Lock System", path: "/lock" },
-                  { label: "Feedback", path: "/feedback" },
-                  { label: "Contact", path: "/contact" },
-              ].map((item, index) => (
+              {navItems.map((item, index) => (
                   <Link
-                      key={index}
+                      key={item.path}
                       to={item.path}
                       onClick={() => {
                         setIsSidebarOpen(false);
@@ -107,4 +109,4 @@ function SideBar({isSidebarOpen , setIsSidebarOpen , handleLogout , firstName , 
   )
 }
 
-export default SideBar
+export default memo(SideBar);

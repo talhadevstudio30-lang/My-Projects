@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import LoginPage from './LoginPage';
 import ProjectList from './ProjectList';
 import ProjectDetailModal from './ProjectDetailModal';
@@ -58,10 +58,7 @@ function Dashboard({
 
             const data = await res.json();
             setProjects(data.projects || []);
-            data.projects?.forEach(project => {
-                const alias = getProjectUrl(project);
-                if (alias) fetchScreenshot(project.id, alias);
-            });
+            // don't eagerly fetch screenshots for all projects here; we'll lazy-load in cards
         } catch (err) {
             console.error(err);
         } finally {
@@ -147,11 +144,23 @@ function Dashboard({
             const data = await response.json();
             if (data.status === 'success' && data.data?.screenshot?.url) {
                 setScreenshots(prev => ({ ...prev, [projectId]: data.data.screenshot.url }));
+                return data.data.screenshot.url;
             }
+            return null;
         } catch (error) {
             console.error(`Failed to fetch screenshot for ${domain}:`, error);
+            return null;
         }
     };
+
+    // Memoized callback used by ProjectCard to request screenshots only when needed.
+    const fetchScreenshotIfNeeded = useCallback(async (projectId, domain) => {
+        if (!domain) return null;
+        if (screenshots[projectId]) return screenshots[projectId];
+        // simple in-memory guard to prevent duplicate fetches
+        const url = await fetchScreenshot(projectId, domain);
+        return url;
+    }, [screenshots]);
 
     const openDetail = (project) => {
         const latestDeploy = project.latestDeployments?.[0] || null;
@@ -196,6 +205,7 @@ function Dashboard({
                         firstName={firstName}
                         lastName={lastName}
                         onLogout={handleLogout}
+                        fetchScreenshotIfNeeded={fetchScreenshotIfNeeded}
                     />
                 )}
 

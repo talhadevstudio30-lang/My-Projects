@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState, memo } from 'react';
 import Favicon from './Favicon';
 
 const formatDate = (timestamp) => {
@@ -10,17 +10,40 @@ const getProjectUrl = (project) => {
   return project.targets?.production?.alias?.[0] || null;
 };
 
-const getScreenshotUrl = (projectId, screenshots) => {
-  return screenshots[projectId] || null;
-};
+// const getScreenshotUrl = (projectId, screenshots) => {
+//   return screenshots[projectId] || null;
+// };
 
-const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpenDetail }) => {
+const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpenDetail, fetchScreenshotIfNeeded }) => {
   const latestDeploy = project.latestDeployments?.[0];
   const projectUrl = getProjectUrl(project);
-  const screenshotUrl = getScreenshotUrl(project.id, screenshots);
+  const cardRef = useRef(null);
+  const [screenshotUrl, setScreenshotUrl] = useState(screenshots?.[project.id] || null);
+
+  // Observe when card enters viewport to lazy-load screenshot
+  useEffect(() => {
+    if (screenshotUrl) return; // already have it
+    if (!cardRef.current) return;
+
+    let observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // fetch screenshot via provided callback which will cache in parent
+          fetchScreenshotIfNeeded && fetchScreenshotIfNeeded(project.id, projectUrl).then(url => {
+            if (url) setScreenshotUrl(url);
+          }).catch(() => {});
+          observer.disconnect();
+        }
+      });
+    }, { rootMargin: '200px' });
+
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [cardRef, screenshotUrl, project.id, projectUrl, fetchScreenshotIfNeeded]);
 
   return (
     <div
+      ref={cardRef}
       onClick={() => onOpenDetail(project)}
       className="group backdrop-blur-xl bg-[#ffffffd1] rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 border-2 border-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 overflow-hidden flex flex-col h-full"
     >
@@ -30,6 +53,7 @@ const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpen
             src={screenshotUrl}
             alt={`${project.name} screenshot`}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-linear-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
@@ -95,4 +119,4 @@ const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpen
   );
 };
 
-export default ProjectCard;
+export default memo(ProjectCard, (prev, next) => prev.project.id === next.project.id && prev.screenshots[prev.project.id] === next.screenshots[next.project.id]);

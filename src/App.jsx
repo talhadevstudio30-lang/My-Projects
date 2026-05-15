@@ -1,23 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback, lazy, Suspense } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
   Outlet,
 } from "react-router-dom";
 
-import Demo_Access from "./components/Demo-Access/Demo-Access";
-import Dashboard from "./components/Dashboard/Dashboard";
-import About from "./components/About";
-import SideBar from "./components/SideBar";
-import Lock from "./components/Lock";
-import Feedback from "./components/Feedback";
-import Contact from "./components/Contact";
+// Lazy-loaded routes to reduce initial bundle size
+const Demo_Access = lazy(() => import("./components/Demo-Access/Demo-Access"));
+const Dashboard = lazy(() => import("./components/Dashboard/Dashboard"));
+const About = lazy(() => import("./components/About"));
+const SideBar = lazy(() => import("./components/SideBar"));
+const Lock = lazy(() => import("./components/Lock"));
+const Feedback = lazy(() => import("./components/Feedback"));
+const Contact = lazy(() => import("./components/Contact"));
 
 // Layout Component - moved outside App to prevent recreation on every render
 function AppLayout({ isLoggedIn, isSidebarOpen, setIsSidebarOpen, handleLogout, firstName, lastName }) {
   return (
     <div className="flex min-h-screen">
       {isLoggedIn && (
+        // SideBar is lazy-loaded via Suspense in the router below
         <SideBar
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
@@ -42,16 +44,16 @@ export default function App() {
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem('VERCEL_LOGIN_STATE');
     localStorage.removeItem('VERCEL_SECURE_TOKEN');
     localStorage.removeItem('USER_FIRST_NAME');
     localStorage.removeItem('USER_LAST_NAME');
     setIsLoggedIn(false);
-  };
+  }, []);
 
-  // Router - created inside but with elements that use the current state
-  const router = createBrowserRouter([
+  // Create the router once (memoized) so it isn't recreated on every render.
+  const router = useMemo(() => createBrowserRouter([
     {
       path: "/",
       element: (
@@ -68,43 +70,67 @@ export default function App() {
         {
           index: true,
           element: (
-            <Dashboard
-              isLoggedIn={isLoggedIn}
-              firstName={firstName} setFirstName={setFirstName}
-              lastName={lastName} setLastName={setLastName}
-              setIsLoggedIn={setIsLoggedIn}
-              handleLogout={handleLogout}
-            />
+            <Suspense fallback={<div />}> 
+              <Dashboard
+                isLoggedIn={isLoggedIn}
+                firstName={firstName} setFirstName={setFirstName}
+                lastName={lastName} setLastName={setLastName}
+                setIsLoggedIn={setIsLoggedIn}
+                handleLogout={handleLogout}
+              />
+            </Suspense>
           ),
         },
         {
           path: "about",
-          element: <About />,
+          element: (
+            <Suspense fallback={<div />}>
+              <About />
+            </Suspense>
+          ),
         },
         {
           path: "demo-access",
-          element: <Demo_Access />,
+          element: (
+            <Suspense fallback={<div />}>
+              <Demo_Access />
+            </Suspense>
+          ),
         },
         {
           path: "lock",
-          element: <Lock />,
+          element: (
+            <Suspense fallback={<div />}>
+              <Lock />
+            </Suspense>
+          ),
         },
         {
           path: "feedback",
-          element: <Feedback />,
+          element: (
+            <Suspense fallback={<div />}>
+              <Feedback />
+            </Suspense>
+          ),
         },
         {
           path: "contact",
-          element: <Contact />,
+          element: (
+            <Suspense fallback={<div />}>
+              <Contact />
+            </Suspense>
+          ),
         },
       ],
     },
-  ]);
+  ]), // only recreate if these change (rare)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [isLoggedIn, isSidebarOpen, firstName, lastName]);
 
   return (
     <>
       <button
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        onClick={() => setIsSidebarOpen(prev => !prev)}
         className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
         aria-label="Toggle menu"
       >
