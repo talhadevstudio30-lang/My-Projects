@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, memo } from 'react';
+import React, { useEffect, useRef, useState, memo, useCallback, useMemo } from 'react';
 import Favicon from './Favicon';
 
 const formatDate = (timestamp) => {
@@ -14,38 +14,45 @@ const getProjectUrl = (project) => {
 //   return screenshots[projectId] || null;
 // };
 
-const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpenDetail, fetchScreenshotIfNeeded }) => {
+const ProjectCard = ({ project, screenshots = {}, iconErrors, handleIconError, onOpenDetail, fetchScreenshotIfNeeded }) => {
   const latestDeploy = project.latestDeployments?.[0];
-  const projectUrl = getProjectUrl(project);
+  const projectUrl = useMemo(() => getProjectUrl(project), [project]);
   const cardRef = useRef(null);
-  const [screenshotUrl, setScreenshotUrl] = useState(screenshots?.[project.id] || null);
+  const [screenshotUrl, setScreenshotUrl] = useState(() => screenshots?.[project.id] || null);
 
   // Observe when card enters viewport to lazy-load screenshot
   useEffect(() => {
     if (screenshotUrl) return; // already have it
     if (!cardRef.current) return;
-
     let observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           // fetch screenshot via provided callback which will cache in parent
-          fetchScreenshotIfNeeded && fetchScreenshotIfNeeded(project.id, projectUrl).then(url => {
-            if (url) setScreenshotUrl(url);
-          }).catch(() => {});
+          if (typeof fetchScreenshotIfNeeded === 'function') {
+            fetchScreenshotIfNeeded(project.id, projectUrl).then(url => {
+              if (url) setScreenshotUrl(url);
+            }).catch(() => {});
+          }
           observer.disconnect();
         }
       });
     }, { rootMargin: '200px' });
 
     observer.observe(cardRef.current);
-    return () => observer.disconnect();
+    return () => {
+      observer?.disconnect();
+    };
   }, [cardRef, screenshotUrl, project.id, projectUrl, fetchScreenshotIfNeeded]);
+
+  const handleCardClick = useCallback(() => onOpenDetail && onOpenDetail(project), [onOpenDetail, project]);
+  const handleOpenDetailBtn = useCallback((e) => { e.stopPropagation(); onOpenDetail && onOpenDetail(project); }, [onOpenDetail, project]);
+  const stopPropagation = useCallback((e) => e.stopPropagation(), []);
 
   return (
     <div
       ref={cardRef}
-      onClick={() => onOpenDetail(project)}
-      className="group backdrop-blur-xl bg-[#ffffffd1] rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 border-2 border-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 overflow-hidden flex flex-col h-full"
+      onClick={handleCardClick}
+      className="group bg-white rounded-2xl shadow-xs hover:shadow-md transition-shadow duration-200 border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 overflow-hidden flex flex-col h-full"
     >
       <div className="relative h-60 bg-gray-100 overflow-hidden border-b border-gray-100">
         {screenshotUrl ? (
@@ -61,20 +68,19 @@ const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpen
           </div>
         )}
         <div className="absolute top-3 right-3">
-          <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${latestDeploy?.readyState === 'READY' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-            }`}>
-            {latestDeploy?.readyState || 'Unknown'}
-          </span>
+            <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${latestDeploy?.readyState === 'READY' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }`}>
+              {latestDeploy?.readyState || 'Unknown'}
+            </span>
         </div>
       </div>
 
       <div className="p-4 grow flex flex-col">
-        <div className="flex items-center gap-3 mb-4">
-          <Favicon project={project} size="small" iconErrors={iconErrors} handleIconError={handleIconError} />
-          <h3 className="text-lg font-bold text-gray-900 truncate">
-            {project.link?.repo || project.name}
-          </h3>
-        </div>
+          <div className="flex items-center gap-3 mb-4">
+            <Favicon project={project} size="small" iconErrors={iconErrors} handleIconError={handleIconError} />
+            <h3 className="text-lg font-bold text-gray-900 truncate">
+              {project.link?.repo || project.name}
+            </h3>
+          </div>
 
         <div className="mt-auto space-y-3">
           <div className="flex items-center justify-between text-xs text-gray-600">
@@ -94,7 +100,7 @@ const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpen
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1"
-                onClick={(e) => e.stopPropagation()}
+                onClick={stopPropagation}
               >
                 <button className="w-full py-2 bg-gray-900 hover:bg-black text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
                   Open Site
@@ -103,8 +109,7 @@ const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpen
               <button
                 className="px-3 py-2 bg-white border border-indigo-200 hover:bg-indigo-50 text-indigo-600 rounded-lg transition-colors"
                 onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenDetail(project);
+                  handleOpenDetailBtn(e);
                 }}
               >
                 <svg className="w-6 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,4 +124,22 @@ const ProjectCard = ({ project, screenshots, iconErrors, handleIconError, onOpen
   );
 };
 
-export default memo(ProjectCard, (prev, next) => prev.project.id === next.project.id && prev.screenshots[prev.project.id] === next.screenshots[next.project.id]);
+// Safer memo compare: check stable keys that matter for rerendering
+const areEqual = (prev, next) => {
+  if (prev.project?.id !== next.project?.id) return false;
+  // If basic metadata changed, re-render
+  const prevLatest = prev.project?.latestDeployments?.[0];
+  const nextLatest = next.project?.latestDeployments?.[0];
+  if ((prevLatest?.readyState) !== (nextLatest?.readyState)) return false;
+  if ((prevLatest?.createdAt) !== (nextLatest?.createdAt)) return false;
+  if ((prev.project?.name) !== (next.project?.name)) return false;
+  // screenshots may be undefined; compare the entry for this project id
+  const prevShot = prev.screenshots?.[prev.project.id];
+  const nextShot = next.screenshots?.[next.project.id];
+  if (prevShot !== nextShot) return false;
+  // icon errors can affect favicon render
+  if (prev.iconErrors !== next.iconErrors) return false;
+  return true;
+};
+
+export default memo(ProjectCard, areEqual);

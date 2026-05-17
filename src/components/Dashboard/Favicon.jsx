@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-const DefaultIcon = ({ project, size }) => {
+const DefaultIcon = memo(({ project, size }) => {
   const sizeClass = size === 'large' ? 'w-16 h-16' : 'w-8 h-8';
   const textClass = size === 'large' ? 'text-2xl' : 'text-lg';
 
@@ -11,7 +11,7 @@ const DefaultIcon = ({ project, size }) => {
       </span>
     </div>
   );
-};
+});
 
 const getProjectUrl = (project) => {
   return project.targets?.production?.alias?.[0] || null;
@@ -44,4 +44,4 @@ const Favicon = ({ project, size = 'large', iconErrors, handleIconError }) => {
   );
 };
 
-export default Favicon;
+export default memo(Favicon);

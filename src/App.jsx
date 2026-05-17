@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback, lazy, Suspense } from "react";
+import React, { useState, useMemo, useCallback, lazy, Suspense } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -149,14 +149,7 @@ export default function App() {
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
-      {/* Global background blur orbs */}
-      <div className="app-bg-orbs">
-        <div className="app-bg-orb-1" />
-        <div className="app-bg-orb-2" />
-        <div className="app-bg-orb-3" />
-        <div className="app-bg-orb-4" />
-        <div className="app-bg-orb-5" />
-      </div>
+      {/* background orbs removed for performance */}
       <RouterProvider router={router} />
     </>
   );

@@ -10,74 +10,9 @@ div {
   border: 1px solid black;
 } */
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(135deg, #f0f0ff, #fdf4ff, #f0fffe);
+body{
+  background-color: rgba(214, 214, 214, 0.195);
 }
 
 /* Colorful blur orbs */
-.app-bg-orbs {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.app-bg-orbs > div {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.4;
-}
-
-.app-bg-orb-1 {
-  width: 500px;
-  height: 500px;
-  background: #6365f1c5;
-  top: -15%;
-  left: -10%;
-  opacity: 0.4;
-}
-
-.app-bg-orb-2 {
-  width: 450px;
-  height: 450px;
-  background: #ec489ac2;
-  bottom: -15%;
-  right: -10%;
-  opacity: 0.35;
-  filter: blur(120px);
-}
-
-.app-bg-orb-3 {
-  width: 380px;
-  height: 380px;
-  background: #06b5d4c3;
-  top: 10%;
-  right: 10%;
-  opacity: 0.3;
-}
-
-.app-bg-orb-4 {
-  width: 320px;
-  height: 320px;
-  background: #a955f7c5;
-  bottom: 10%;
-  left: 10%;
-  opacity: 0.3;
-  filter: blur(90px);
-}
-
-.app-bg-orb-5 {
-  width: 260px;
-  height: 260px;
-  background: #10b981c6;
-  top: 45%;
-  left: 45%;
-  opacity: 0.25;
-  filter: blur(80px);
-}
+/* background orbs removed for performance */
