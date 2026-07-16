@@ -88,23 +88,14 @@ function SideBar({isSidebarOpen , setIsSidebarOpen , handleLogout , firstName , 
           {/* Footer/Logout Section (Optional) */}
           <div className="border-t border-gray-200 pt-4">
               <button
-                  onClick={() => {
-                    handleClick('logout');
-                    handleLogout();
-                  }}
-                  className={`
-                    w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-100
-                    text-gray-600 hover:bg-red-50 hover:text-red-600 active:scale-[0.97]
-                    ${clickedItem === 'logout' ? 'scale-[0.97] bg-red-50' : ''}
-                  `}
               >
                   <span className="material-symbols-outlined text-[20px] transition-all duration-200 hover:text-red-600">
-                      logout
+                      Report_Bug
                   </span>
-                  <span className="text-sm font-medium">Logout</span>
+                  <span className="text-sm font-medium">Report_Bug</span>
               </button>
           </div>
-      </nav>
+      </nav> 
     </div>
   )
 }
